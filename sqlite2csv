@@ -1,0 +1,2 @@
+#!bin/bash
+echo 'select * from data;' | sqlite3 -init csv.conf test2.db

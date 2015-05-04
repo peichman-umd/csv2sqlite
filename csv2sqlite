@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+import csv
+import sqlite3
+
+csv_file = 'test.csv'
+db_file = 'test2.db'
+
+dbh = sqlite3.connect(db_file)
+
+with open(csv_file, 'rb') as in_csv:
+    in_reader = csv.reader(in_csv)
+    headers = in_reader.next()
+    print headers
+    # XXX: real code MUST sanitize headers for legal SQL column names
+    sql_create = 'create table data (' + ','.join([h + ' varchar' for h in headers]) + ')'
+    print sql_create
+    dbh.execute(sql_create)
+    placeholders = ['?'] * len(headers)
+    print placeholders
+    sql_insert = 'insert into data (' + ','.join(headers) + ') values (' + ','.join(placeholders) + ')'
+    print sql_insert
+    for row in in_reader:
+        print row
+        dbh.execute(sql_insert, tuple(row))
+    dbh.commit()
