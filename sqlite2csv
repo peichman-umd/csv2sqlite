@@ -1,3 +1,25 @@
-#!/bin/bash
-DB_FILE=$1
-echo 'select * from data;' | sqlite3 -init csv.conf "$DB_FILE"
+#!/usr/bin/env python
+
+import csv
+import sqlite3
+import sys
+import argparse
+import re
+
+parser = argparse.ArgumentParser()
+parser.add_argument('DB_FILE')
+args = parser.parse_args()
+
+dbh = sqlite3.connect(args.DB_FILE)
+
+csvout = csv.writer(sys.stdout, lineterminator='\n')
+
+cur = dbh.cursor()
+
+# recreate the header row
+cur.execute('select header from headers order by position')
+headers = [h[0] for h in cur.fetchall()]
+csvout.writerow(headers)
+
+for row in dbh.execute('select * from data'):
+    csvout.writerow(row)

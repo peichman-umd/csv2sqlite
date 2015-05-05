@@ -26,6 +26,19 @@ if args.VERBOSE:
 nonwords = re.compile('[^a-zA-Z0-9_]')
 columns = [ nonwords.sub('_', h) for h in headers ]
 
+# preserve original header names and positions
+if args.FORCE:
+    dbh.execute('drop table if exists headers')
+dbh.execute('create table headers (position text, header text, column text)')
+dbh.executemany(
+    'insert into headers (position, header, column) values (?,?,?)',
+    zip(
+        list(xrange(1,len(headers) + 1)),
+        headers,
+        columns,
+    ),
+)
+
 sql_create = 'create table data (' + ','.join([c + ' text' for c in columns]) + ')'
 if args.VERBOSE:
     print(sql_create, file=sys.stderr)
