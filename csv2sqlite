@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import csv
 import sqlite3
 import sys
@@ -8,6 +10,7 @@ import re
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', dest="FORCE", action="store_true")
+parser.add_argument('-v', dest="VERBOSE", action="store_true")
 parser.add_argument('DB_FILE')
 args = parser.parse_args()
 
@@ -16,24 +19,28 @@ dbh = sqlite3.connect(args.DB_FILE)
 in_reader = csv.reader(sys.stdin)
 
 headers = in_reader.next()
-print headers
+if args.VERBOSE:
+    print(headers, file=sys.stderr)
 
 # sanitize headers for legal SQL column names
 nonwords = re.compile('[^a-zA-Z0-9_]')
 columns = [ nonwords.sub('_', h) for h in headers ]
 
 sql_create = 'create table data (' + ','.join([c + ' text' for c in columns]) + ')'
-print sql_create
+if args.VERBOSE:
+    print(sql_create, file=sys.stderr)
 if args.FORCE:
     dbh.execute('drop table if exists data')
 dbh.execute(sql_create)
 
 placeholders = ['?'] * len(columns)
 sql_insert = 'insert into data (' + ','.join(columns) + ') values (' + ','.join(placeholders) + ')'
-print sql_insert
+if args.VERBOSE:
+    print(sql_insert, file=sys.stderr)
 
 for row in in_reader:
-    print row
+    if args.VERBOSE:
+        print(row, file=sys.stderr)
     dbh.execute(sql_insert, tuple(row))
 
 dbh.commit()
