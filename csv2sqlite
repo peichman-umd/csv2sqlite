@@ -6,7 +6,23 @@ import csv
 import sqlite3
 import sys
 import argparse
-import re
+
+# source: http://stackoverflow.com/a/6701665/5124907
+import codecs
+
+def quote_identifier(s, errors="strict"):
+    encodable = s.encode("utf-8", errors).decode("utf-8")
+
+    nul_index = encodable.find("\x00")
+
+    if nul_index >= 0:
+        error = UnicodeEncodeError("NUL-terminated utf-8", encodable,
+                                   nul_index, nul_index + 1, "NUL not allowed")
+        error_handler = codecs.lookup_error(errors)
+        replacement, _ = error_handler(error)
+        encodable = encodable.replace("\x00", replacement)
+
+    return "\"" + encodable.replace("\"", "\"\"") + "\""
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', dest="FORCE", action="store_true")
@@ -22,9 +38,9 @@ headers = in_reader.next()
 if args.VERBOSE:
     print(headers, file=sys.stderr)
 
-# sanitize headers for legal SQL column names
-nonwords = re.compile('[^a-zA-Z0-9_]')
-columns = [ nonwords.sub('_', h) for h in headers ]
+# transform header strings to legal SQL identifiers
+# for use as column names
+columns = [ quote_identifier(h) for h in headers ]
 
 # preserve original header names and positions
 if args.FORCE:
