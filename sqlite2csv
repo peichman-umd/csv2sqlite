@@ -4,7 +4,6 @@ import csv
 import sqlite3
 import sys
 import argparse
-import re
 
 parser = argparse.ArgumentParser()
 parser.add_argument('DB_FILE')
@@ -17,9 +16,12 @@ csvout = csv.writer(sys.stdout, lineterminator='\n')
 cur = dbh.cursor()
 
 # recreate the header row
-cur.execute('select header from headers order by position')
-headers = [h[0] for h in cur.fetchall()]
-csvout.writerow(headers)
+headers = []
+columns = []
+for (h, c) in cur.execute('select header, column from headers order by position'):
+    headers.append(h)
+    columns.append(c)
 
-for row in dbh.execute('select * from data'):
+csvout.writerow(headers)
+for row in dbh.execute('select ' + ', '.join(columns) + ' from data'):
     csvout.writerow(row)

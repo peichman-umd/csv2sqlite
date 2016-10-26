@@ -17,4 +17,3 @@ diff -u test.csv <(./csv2sqlite < test.csv test2.db -f; ./sqlite2csv test2.db)
 # TODO
 - store original line numbers
 - store original line endings (and other dialect parameters) of the input csv
-- ensure that sqlite2csv prints out the data in the correct column order
