@@ -82,14 +82,15 @@ if args.FORCE:
     dbh.execute('drop table if exists data')
 dbh.execute(sql_create)
 
-placeholders = ['?'] * len(columns)
-sql_insert = 'insert into data (' + ','.join(columns) + ') values (' + ','.join(placeholders) + ')'
+placeholders = ['?'] * (len(columns) + 1)
+sql_insert = 'insert into data (rowid,' + ','.join(columns) + ') values (' + ','.join(placeholders) + ')'
 if args.VERBOSE:
     print(sql_insert, file=sys.stderr)
 
 for row in in_reader:
+    data_row = [in_reader.line_num] + row
     if args.VERBOSE:
-        print(row, file=sys.stderr)
-    dbh.execute(sql_insert, tuple(row))
+        print(data_row, file=sys.stderr)
+    dbh.execute(sql_insert, tuple(data_row))
 
 dbh.commit()

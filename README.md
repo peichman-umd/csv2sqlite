@@ -15,6 +15,5 @@ diff -u test.csv <(./csv2sqlite < test.csv test2.db -f; ./sqlite2csv test2.db)
 ```
 
 # TODO
-- store original line numbers
 - store other dialect parameters of the input csv
 - provide the ability to configure the dialect for input or output

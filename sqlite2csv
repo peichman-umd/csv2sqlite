@@ -40,5 +40,5 @@ for (h, c) in cur.execute('select header, column from headers order by position'
     columns.append(c)
 
 csvout.writerow(headers)
-for row in dbh.execute('select ' + ', '.join(columns) + ' from data'):
+for row in dbh.execute('select ' + ', '.join(columns) + ' from data order by rowid'):
     csvout.writerow(row)
