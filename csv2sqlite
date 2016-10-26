@@ -28,6 +28,7 @@ def quote_identifier(s, errors="strict"):
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', dest="FORCE", action="store_true")
 parser.add_argument('-v', dest="VERBOSE", action="store_true")
+parser.add_argument('-d', dest="DELIMITER", action="store", default=',')
 parser.add_argument('DB_FILE')
 args = parser.parse_args()
 
@@ -45,6 +46,13 @@ if re.search(r"\x0d\x0a", sample):
 else:
     # Unix
     dialect['lineterminator'] = "\x0a"
+
+# set delimiter character from argument
+dialect['delimiter'] = args.DELIMITER
+# allow the literal string \t to stand for a TAB
+if dialect['delimiter'] == '\\t':
+    dialect['delimiter'] = '\t'
+
 in_reader = csv.reader(sys.stdin, **dialect)
 
 # save dialect attributes
@@ -53,7 +61,10 @@ if args.FORCE:
 dbh.execute('create table dialect (key text, value text)')
 for key in dialect:
     dbh.execute('insert into dialect (key, value) values (?, ?)', (key, dialect[key]))
+if args.VERBOSE:
+    print(dialect, file=sys.stderr)
 
+# read header line
 headers = in_reader.next()
 if args.VERBOSE:
     print(headers, file=sys.stderr)
