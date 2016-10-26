@@ -11,9 +11,26 @@ args = parser.parse_args()
 
 dbh = sqlite3.connect(args.DB_FILE)
 
-csvout = csv.writer(sys.stdout, lineterminator='\n')
-
 cur = dbh.cursor()
+
+# load the dialect options
+dialect = {}
+type_for = {
+    'delimiter': str,
+    'doublequote': bool,
+    'escapechar': str,
+    'lineterminator': str,
+    'quotechar': str,
+    'quoting': int,
+    'skipinitialspace': bool,
+    'strict': bool,
+}
+for (k, v) in cur.execute('select key, value from dialect'):
+    key = str(k)
+    if key in type_for.keys() and v is not None:
+        dialect[key] = type_for[key](v)
+
+csvout = csv.writer(sys.stdout, **dialect)
 
 # recreate the header row
 headers = []

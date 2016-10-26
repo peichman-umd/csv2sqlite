@@ -6,6 +6,7 @@ import csv
 import sqlite3
 import sys
 import argparse
+import re
 
 # source: http://stackoverflow.com/a/6701665/5124907
 import codecs
@@ -22,7 +23,7 @@ def quote_identifier(s, errors="strict"):
         replacement, _ = error_handler(error)
         encodable = encodable.replace("\x00", replacement)
 
-    return "\"" + encodable.replace("\"", "\"\"") + "\""
+    return '"' + encodable.replace('"', '""') + '"'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', dest="FORCE", action="store_true")
@@ -32,7 +33,26 @@ args = parser.parse_args()
 
 dbh = sqlite3.connect(args.DB_FILE)
 
-in_reader = csv.reader(sys.stdin)
+# attempt to automatically detect line endings
+sample = sys.stdin.read(1024)
+dialect = {}
+sys.stdin.seek(0)
+# explicitly check the line terminator, since the csv dialect sniffer
+# always seems to return '\r\n', even if the source file only has '\n'
+if re.search(r"\x0d\x0a", sample):
+    # DOS
+    dialect['lineterminator'] = "\x0d\x0a"
+else:
+    # Unix
+    dialect['lineterminator'] = "\x0a"
+in_reader = csv.reader(sys.stdin, **dialect)
+
+# save dialect attributes
+if args.FORCE:
+    dbh.execute('drop table if exists dialect')
+dbh.execute('create table dialect (key text, value text)')
+for key in dialect:
+    dbh.execute('insert into dialect (key, value) values (?, ?)', (key, dialect[key]))
 
 headers = in_reader.next()
 if args.VERBOSE:
