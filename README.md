@@ -14,6 +14,12 @@ $ sqlite2csv test.db > new.csv
 diff -u test.csv <(./csv2sqlite < test.csv test2.db -f; ./sqlite2csv test2.db)
 ```
 
+## Requirements
+
+Python 2.5+
+
+## Description
+
 ### Line Terminators
 
 The `csv2sqlite` utility attempts to determine the line
@@ -55,11 +61,17 @@ database under the key `delimiter`. It is used by `sqlite2csv`
 to recreate a (hopefully) byte-for-byte identical CSV file to
 the original.
 
+## See Also
 
-# TODO
+* [Python SQLite Library](https://docs.python.org/2/library/sqlite3.html)
+* [SQLite](https://sqlite.org/)
+* [Python CSV Library](https://docs.python.org/2/library/csv.html)
+* [RFC 4180](https://tools.ietf.org/html/rfc4180)
+
+## TODO
 - store other dialect parameters of the input csv
 - provide the ability to configure the dialect for input or output
 - support CSV files without headers
 - configurable table names
 
-[escaped-string]: http://wiki.bash-hackers.org/syntax/quoting#ansi_c_like_strings
+[escaped-string]: http://wiki.bash-hackers.org/syntax/quoting#ansi_c_like_strings 
